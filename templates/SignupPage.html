@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>新規登録</title>
+</head>
+<body>
+    <h2>ユーザー登録</h2>
+    <form method="post">
+        <label>ユーザー名: <input type="text" name="username" required></label><br>
+        <label>メールアドレス: <input type="email" name="email" required></label><br>
+        <label>パスワード: <input type="password" name="password" required></label><br>
+        <label>生年月日: <input type="date" name="birthdate" required></label><br>
+        <label>身長 (cm): <input type="number" name="tall" step="0.1" required></label><br>
+        <label>性別:
+            <select name="gender" required>
+                <option value="">選択してください</option>
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+            </select>
+        </label><br>
+        <label>目標体重 (kg): <input type="number" name="goalweight" step="0.1" required></label><br>
+        <button type="submit">登録</button>
+    </form>
+    <p style="color:red;">{{ message }}</p>
+</body>
+</html>
