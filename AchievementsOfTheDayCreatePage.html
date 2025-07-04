@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>1日の成果入力</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 2em;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        label {
+            display: block;
+            margin-top: 1em;
+        }
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            margin-top: 1.5em;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>1日の成果を入力</h2>
+
+    <form method="POST">
+        <label for="date">日付</label>
+        <input type="date" name="date" id="date" required>
+
+        <label for="weight">体重（kg）</label>
+        <input type="number" name="weight" id="weight" step="0.1" required>
+
+        <label for="steps">歩数</label>
+        <input type="number" name="steps" id="steps" required>
+
+        <button type="submit">登録</button>
+    </form>
+
+</body>
+</html>
