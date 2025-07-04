@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>アカウント情報変更</title>
+</head>
+<body>
+    <h2>アカウント情報の変更</h2>
+
+    <form method="post">
+        <label>メールアドレス: <input type="email" name="email" value="{{ user.email }}" required></label><br>
+        <label>生年月日: <input type="date" name="birthdate" value="{{ user.birthdate }}" required></label><br>
+        <label>身長 (cm): <input type="number" name="tall" step="0.1" value="{{ user.tall }}" required></label><br>
+        <label>性別:
+            <select name="gender" required>
+                <option value="male" {% if user.gender == 'male' %}selected{% endif %}>男性</option>
+                <option value="female" {% if user.gender == 'female' %}selected{% endif %}>女性</option>
+            </select>
+        </label><br>
+        <label>目標体重 (kg): <input type="number" name="goalweight" step="0.1" value="{{ user.goalweight }}" required></label><br>
+        <button type="submit">保存</button>
+    </form>
+
+    <p><a href="/Profile">プロフィールに戻る</a></p>
+</body>
+</html>
