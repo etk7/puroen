@@ -3,17 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <title>ホーム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        .button-container form,
+        .button-container a {
+            display: inline-block;
+            margin: 10px 10px 0 0;
+        }
+        button, a.button-link {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        a.button-link:hover, button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h2>ようこそ、{{ username }} さん！</h2>
-    <p>ここから日々の記録や活動を開始できます。</p>
 
-    <!-- 今後追加予定のメニュー -->
-    <ul>
-        <li><a href="/Profile">プロフィールを見る</a></li>
-        <li><a href="#">記録する（未実装）</a></li>
-        <li><a href="#">活動報告（未実装）</a></li>
-        <li><a href="/logout">ログアウト</a></li>
-    </ul>
+    <h1>{{ username }}さん、ようこそ！</h1>
+
+    <div class="button-container">
+        <!-- 友達検索 -->
+        <form action="{{ url_for('user_search') }}" method="get">
+            <button type="submit">友達検索</button>
+        </form>
+
+        <!-- プロフィール確認 -->
+        <a href="{{ url_for('profile') }}" class="button-link">プロフィール確認</a>
+
+        <!-- アカウント情報変更 -->
+        <a href="{{ url_for('edit_profile') }}" class="button-link">アカウント情報変更</a>
+
+        <!-- ログアウト -->
+        <a href="{{ url_for('logout') }}" class="button-link">ログアウト</a>
+    </div>
+
 </body>
 </html>
