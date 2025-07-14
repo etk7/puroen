@@ -1,0 +1,4 @@
+FriendApplyConfirm.html
+
+FriendApplyAcceptPage.html
+
