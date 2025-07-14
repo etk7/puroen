@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}検索結果{% endblock %}
+
+{% block content %}
+<h1>「{{ keyword }}」の検索結果</h1>
+{% if results %}
+    <p>{{ results|length }} 件のユーザーが見つかりました。</p>
+    {% for user in results %}
+        <div class="user-card">
+            <strong>ユーザー名：</strong> {{ user.username }}<br>
+            <strong>メール：</strong> {{ user.email }}<br>
+            <form action="{{ url_for('friend_apply', target_id=user.id) }}" method="POST">
+                <button type="submit">友達申請</button>
+            </form>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>該当するユーザーが見つかりませんでした。</p>
+{% endif %}
+<p><a href="{{ url_for('user_search') }}" class="button-link">検索に戻る</a></p>
+{% endblock %}
