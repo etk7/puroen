@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key'  # セッション用のキー
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key')  # セッションキー
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(app)
 
@@ -25,10 +26,10 @@ with app.app_context():
 # --- トップページ（ログイン or 登録選択） ---
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('LoginOrSignupPage.html')
 
 # --- ログインページ ---
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/LoginPage', methods=['GET', 'POST'])
 def login():
     message = ''
     if request.method == 'POST':
@@ -41,10 +42,10 @@ def login():
             return redirect(url_for('profile'))
         else:
             message = 'ユーザー名またはパスワードが違います'
-    return render_template('login.html', message=message)
+    return render_template('LoginPage.html', message=message)
 
 # --- 新規登録ページ ---
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/SignupPage', methods=['GET', 'POST'])
 def signup():
     message = ''
     if request.method == 'POST':
@@ -52,9 +53,14 @@ def signup():
         email = request.form['email']
         password = generate_password_hash(request.form['password'])
         birthdate = request.form['birthdate']
-        tall = float(request.form['tall'])
         gender = request.form['gender']
-        goalweight = float(request.form['goalweight'])
+
+        try:
+            tall = float(request.form['tall'])
+            goalweight = float(request.form['goalweight'])
+        except ValueError:
+            message = '身長と目標体重には数字を入力してください'
+            return render_template('SignupPage.html', message=message)
 
         if User.query.filter_by(username=username).first():
             message = 'このユーザー名はすでに使われています'
@@ -75,7 +81,7 @@ def signup():
             session['user_id'] = new_user.id
             session['username'] = new_user.username
             return redirect(url_for('profile'))
-    return render_template('signup.html', message=message)
+    return render_template('SignupPage.html', message=message)
 
 # --- プロフィール確認ページ ---
 @app.route('/profile')
@@ -83,10 +89,10 @@ def profile():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
-    return render_template('profile.html', user=user)
+    return render_template('Profile.html', user=user)
 
 # --- アカウント情報変更ページ ---
-@app.route('/edit_profile', methods=['GET', 'POST'])
+@app.route('/account/edit', methods=['GET', 'POST'])
 def edit_profile():
     if 'user_id' not in session:
         return redirect(url_for('login'))
@@ -97,22 +103,26 @@ def edit_profile():
     if request.method == 'POST':
         user.email = request.form['email']
         user.birthdate = request.form['birthdate']
-        user.tall = float(request.form['tall'])
         user.gender = request.form['gender']
-        user.goalweight = float(request.form['goalweight'])
+
+        try:
+            user.tall = float(request.form['tall'])
+            user.goalweight = float(request.form['goalweight'])
+        except ValueError:
+            message = '身長と目標体重には数字を入力してください'
+            return render_template('AccountInfoChangePage.html', user=user, message=message)
 
         db.session.commit()
-        message = '情報を更新しました！'
         return redirect(url_for('profile'))
 
-    return render_template('edit_profile.html', user=user, message=message)
+    return render_template('AccountInfoChangePage.html', user=user, message=message)
 
 # --- ホーム画面（ログイン後） ---
 @app.route('/home')
 def home():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    return render_template('home.html', username=session['username'])
+    return render_template('HomePage.html', username=session['username'])
 
 # --- ログアウト ---
 @app.route('/logout')
