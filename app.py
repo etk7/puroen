@@ -124,6 +124,28 @@ def home():
         return redirect(url_for('login'))
     return render_template('HomePage.html', username=session['username'])
 
+# ---ユーザ検索画面---
+@app.route('/UserSearchPage', methods=['GET'])
+def user_search():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('UserSearchPage.html')   
+
+# ---ユーザ検索結果---
+@app.route('/SearchResultPage', methods=['POST'])
+def search_result():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    keyword = request.form['keyword']
+    results = User.query.filter(
+        ((User.username.contains(keyword)) | (User.email.contains(keyword))) &
+        (User.id != session['user_id'])
+    ).all()
+
+
+    return render_template('SearchResultPage.html', keyword=keyword, results=results)
+
 # --- ログアウト ---
 @app.route('/logout')
 def logout():
