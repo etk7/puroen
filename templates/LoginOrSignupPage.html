@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>はじめに</title>
-</head>
-<body>
-    <h2>ようこそ！</h2>
-    <p>以下のいずれかを選んでください：</p>
+{% extends "base.html" %}
 
-    <a href="/LoginPage"><button>ログイン</button></a>
-    <a href="/SignupPage"><button>新規登録</button></a>
-</body>
-</html>
+{% block title %}ようこそ{% endblock %}
+
+{% block content %}
+<h1>ようこそ</h1>
+<p>以下のいずれかを選択してください。</p>
+<div class="button-container">
+    <a href="{{ url_for('login') }}" class="button-link">ログイン</a>
+    <a href="{{ url_for('signup') }}" class="button-link">新規登録</a>
+</div>
+{% endblock %}
