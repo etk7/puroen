@@ -1,28 +1,16 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>プロフィール</title>
-</head>
-<body>
-    <h2>プロフィール情報</h2>
-    <ul>
-        <li>ユーザー名: {{ user.username }}</li>
-        <li>メールアドレス: {{ user.email }}</li>
-        <li>生年月日: {{ user.birthdate }}</li>
-        <li>身長: {{ user.tall }} cm</li>
-        <li>性別: {{ user.gender }}</li>
-        <li>目標体重: {{ user.goalweight }} kg</li>
-    </ul>
+{% extends "base.html" %}
 
-    <form action="{{ url_for('home') }}" method="get" style="display:inline;">
-        <button type="submit">確認</button>
-    </form>
+{% block title %}プロフィール{% endblock %}
 
-    <form action="{{ url_for('edit_profile') }}" method="get" style="display:inline;">
-        <button type="submit">変更</button>
-    </form>
-
-    <p><a href="/logout">ログアウト</a></p>
-</body>
-</html>
+{% block content %}
+<h1>{{ user.username }} さんのプロフィール</h1>
+<ul>
+    <li>メールアドレス：{{ user.email }}</li>
+    <li>生年月日：{{ user.birthdate }}</li>
+    <li>身長：{{ user.tall }} cm</li>
+    <li>性別：{{ user.gender }}</li>
+    <li>目標体重：{{ user.goalweight }} kg</li>
+</ul>
+<p><a href="{{ url_for('edit_profile') }}" class="button-link">アカウント情報変更</a></p>
+<p><a href="{{ url_for('home') }}" class="button-link">ホームに戻る</a></p>
+{% endblock %}
