@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}ユーザー検索{% endblock %}
+
+{% block content %}
+<h1>ユーザー検索</h1>
+<form method="POST" action="{{ url_for('search_result') }}">
+    <label for="keyword">メールアドレス：</label>
+    <input type="text" name="keyword" required>
+    <button type="submit">検索</button>
+</form>
+<p><a href="{{ url_for('home') }}" class="button-link">ホームに戻る</a></p>
+{% endblock %}
