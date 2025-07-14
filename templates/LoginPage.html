@@ -1,16 +1,25 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>ログイン</title>
-</head>
-<body>
-    <h2>ログイン</h2>
-    <form method="post">
-        <label>ユーザー名: <input type="text" name="username" required></label><br>
-        <label>パスワード: <input type="password" name="password" required></label><br>
-        <button type="submit">ログイン</button>
-    </form>
+{% extends "base.html" %}
+
+{% block title %}ログイン{% endblock %}
+
+{% block content %}
+<h1>ログイン</h1>
+
+<form method="POST">
+    <div class="form-group">
+        <label for="username">ユーザー名：</label><br>
+        <input type="text" name="username" id="username" required>
+    </div>
+    <div class="form-group">
+        <label for="password">パスワード：</label><br>
+        <input type="password" name="password" id="password" required>
+    </div>
+    <button type="submit">ログイン</button>
+</form>
+
+{% if message %}
     <p style="color:red;">{{ message }}</p>
-</body>
-</html>
+{% endif %}
+
+<p><a href="{{ url_for('signup') }}" class="button-link">新規登録はこちら</a></p>
+{% endblock %}
