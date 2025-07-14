@@ -1,27 +1,45 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>新規登録</title>
-</head>
-<body>
-    <h2>ユーザー登録</h2>
-    <form method="post">
-        <label>ユーザー名: <input type="text" name="username" required></label><br>
-        <label>メールアドレス: <input type="email" name="email" required></label><br>
-        <label>パスワード: <input type="password" name="password" required></label><br>
-        <label>生年月日: <input type="date" name="birthdate" required></label><br>
-        <label>身長 (cm): <input type="number" name="tall" step="0.1" required></label><br>
-        <label>性別:
-            <select name="gender" required>
-                <option value="">選択してください</option>
-                <option value="male">男性</option>
-                <option value="female">女性</option>
-            </select>
-        </label><br>
-        <label>目標体重 (kg): <input type="number" name="goalweight" step="0.1" required></label><br>
-        <button type="submit">登録</button>
-    </form>
+{% extends "base.html" %}
+
+{% block title %}新規登録{% endblock %}
+
+{% block content %}
+<h1>新規登録</h1>
+
+<form method="POST">
+    <div class="form-group">
+        <label for="username">ユーザー名：</label><br>
+        <input type="text" name="username" required>
+    </div>
+    <div class="form-group">
+        <label for="email">メールアドレス：</label><br>
+        <input type="email" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="password">パスワード：</label><br>
+        <input type="password" name="password" required>
+    </div>
+    <div class="form-group">
+        <label for="birthdate">生年月日：</label><br>
+        <input type="date" name="birthdate">
+    </div>
+    <div class="form-group">
+        <label for="tall">身長(cm)：</label><br>
+        <input type="number" name="tall" step="0.1">
+    </div>
+    <div class="form-group">
+        <label for="goalweight">目標体重(kg)：</label><br>
+        <input type="number" name="goalweight" step="0.1">
+    </div>
+    <div class="form-group">
+        <label for="gender">性別：</label><br>
+        <input type="text" name="gender">
+    </div>
+    <button type="submit">登録</button>
+</form>
+
+{% if message %}
     <p style="color:red;">{{ message }}</p>
-</body>
-</html>
+{% endif %}
+
+<p><a href="{{ url_for('login') }}" class="button-link">ログインはこちら</a></p>
+{% endblock %}
