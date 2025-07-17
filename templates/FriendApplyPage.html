@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}友達申請{% endblock %}
+
+{% block content %}
+<h1>友達申請</h1>
+
+<p><strong>{{ target_user.username }}</strong>さんに友達申請を送信しますか？</p>
+<p>メールアドレス：{{ target_user.email }}</p>
+
+<form method="POST" action="{{ url_for('friend_apply_confirm', target_id=target_user.id) }}">
+    <button type="submit">申請する</button>
+</form>
+
+<p><a href="{{ url_for('user_search') }}" class="button-link">戻る</a></p>
+{% endblock %}
