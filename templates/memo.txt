@@ -1,4 +1,5 @@
-FriendApplyConfirm.html
+友達検索した結果のところに友達申請の画面を作る
 
-FriendApplyAcceptPage.html
-
+rm users.db
+python app.py
+↑　rmが使えない
