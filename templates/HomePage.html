@@ -45,6 +45,16 @@
             <button type="submit">友達検索</button>
         </form>
 
+        <!-- グループ作成 -->
+        <form action="{{ url_for('group_create') }}" method="get">
+            <button type="submit">グループ作成</button>
+        </form>
+
+        <!-- 友達申請受信ボックス -->
+        <form action="{{ url_for('friend_apply_accept') }}" method="get">
+            <button type="submit">友達申請受信</button>
+        </form>
+
         <!-- プロフィール確認 -->
         <a href="{{ url_for('profile') }}" class="button-link">プロフィール確認</a>
 
