@@ -358,3 +358,7 @@ def create_achievement():
 
     return render_template("achievements_of_the_day_create.html", message=message)
 
+@app.route("/achievement/create", methods=["GET", "POST"])
+def create_achievement():
+    # 1日の成果入力ページを表示 or POST処理
+    ...
