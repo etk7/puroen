@@ -10,7 +10,8 @@
         <div class="user-card">
             <strong>ユーザー名：</strong> {{ user.username }}<br>
             <strong>メール：</strong> {{ user.email }}<br>
-            <form action="{{ url_for('friend_apply', target_id=user.id) }}" method="POST">
+            <form action="{{ url_for('friend_apply') }}" method="POST">
+                <input type="hidden" name="target_id" value="{{ user.id }}">
                 <button type="submit">友達申請</button>
             </form>
         </div>
