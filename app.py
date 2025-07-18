@@ -155,6 +155,7 @@ def search_result():
 
     return render_template('SearchResultPage.html', keyword=keyword, results=results)
 
+# ---グループ作成---
 @app.route('/GroupCreatePage', methods=['GET', 'POST'])
 def group_create():
     if 'user_id' not in session:
@@ -167,6 +168,7 @@ def group_create():
 
     return render_template('GroupCreatePage.html')
 
+# ---グループ作成確認---
 @app.route('/GroupCreateConfirmPage', methods=['POST'])
 def confirm_group_creation():
     if 'user_id' not in session:
@@ -182,36 +184,45 @@ def confirm_group_creation():
 
     return redirect(url_for('home'))  # またはグループ詳細ページなど
 
-@app.route('/FriendApplyPage/<int:target_id>', methods=['GET'])
-def friend_apply_page(target_id):
+# ---友達申請---
+@app.route('/FriendApplyPage', methods=['POST'])
+def friend_apply():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    target_user = User.query.get_or_404(target_id)
-    return render_template('FriendApplyPage.html', target_user=target_user)
+    target_id = int(request.form['target_id'])
+    from_id = session['user_id']
 
-@app.route('/FriendApplyConfirmPage/<int:target_id>', methods=['POST'])
+    # 既に申請済みか確認
+    existing = FriendRequest.query.filter_by(from_user_id=from_id, to_user_id=target_id).first()
+
+    if not existing:
+        new_request = FriendRequest(
+            from_user_id=from_id,
+            to_user_id=target_id,
+            status='pending'
+        )
+        db.session.add(new_request)
+        db.session.commit()
+
+    # target_idをURLに渡す
+    return redirect(url_for('friend_apply_confirm', target_id=target_id))
+
+# ---友達申請確認---
+@app.route('/FriendApplyConfirmPage/<int:target_id>', methods=['GET'])
 def friend_apply_confirm(target_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    from_id = session['user_id']
-    to_id = target_id
+    target_user = User.query.get(target_id)
+    if not target_user:
+        return "ユーザーが存在しません", 404
 
-    # 重複確認（既に申請済みや友達関係など）
-    existing_request = FriendRequest.query.filter_by(from_user_id=from_id, to_user_id=to_id).first()
-    if existing_request:
-        message = "すでに申請済みです。"
-    else:
-        new_request = FriendRequest(from_user_id=from_id, to_user_id=to_id)
-        db.session.add(new_request)
-        db.session.commit()
-        message = "友達申請を送信しました。"
+    return render_template('FriendApplyConfirmPage.html', target_user=target_user)
 
-    return render_template('FriendApplyConfirmPage.html', message=message)
-
-@app.route('/FriendApplyAcceptPage', methods=['GET'])
-def friend_apply_accept():
+# ---友達申請承認---
+@app.route('/FriendApplyReceptPage', methods=['GET'])
+def friend_apply_recept():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
@@ -220,10 +231,11 @@ def friend_apply_accept():
     # 自分宛てで、まだ未承諾の申請を取得
     pending_requests = FriendRequest.query.filter_by(to_user_id=user_id, status='pending').all()
 
-    return render_template('FriendApplyAcceptPage.html', requests=pending_requests)
+    return render_template('FriendApplyReceptPage.html', requests=pending_requests)
 
-@app.route('/FriendApplyReceptPage/<int:request_id>', methods=['POST'])
-def friend_apply_recept(request_id):
+# ---友達申請受信---
+@app.route('/FriendApplyAcceptPage/<int:request_id>', methods=['POST'])
+def friend_apply_accept(request_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
@@ -245,7 +257,42 @@ def friend_apply_recept(request_id):
     else:
         message = "不正なアクションです。"
 
-    return render_template('FriendApplyReceptPage.html', message=message)
+    return render_template('FriendApplyAcceptPage.html', message=message)
+
+# ---友達一覧---
+@app.route('/FriendListPage')
+def friend_list():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+
+    # 友達リスト取得（双方向で検索）
+    friends = db.session.query(User).join(
+        FriendRequest,
+        ((FriendRequest.from_user_id == user_id) & (FriendRequest.to_user_id == User.id)) |
+        ((FriendRequest.to_user_id == user_id) & (FriendRequest.from_user_id == User.id))
+    ).filter(FriendRequest.status == 'accepted').all()
+
+    return render_template('FriendListPage.html', friends=friends)
+
+# ---友達のプロフィール---
+@app.route('/FriendInfoPage/<int:user_id>')
+def friend_info(user_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    friend = User.query.get_or_404(user_id)
+    return render_template('FriendInfoPage.html', user=friend)
+
+# ---申請相手ユーザー画面---
+@app.route('/ApplicantPage/<int:user_id>')
+def applicant_page(user_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.get_or_404(user_id)
+    return render_template('ApplicantPage.html', user=user)
 
 # --- ログアウト ---
 @app.route('/logout')
