@@ -27,17 +27,7 @@ class FriendRequest(db.Model):
 
     from_user = db.relationship('User', foreign_keys=[from_user_id])
     to_user = db.relationship('User', foreign_keys=[to_user_id])
-
-class Group(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(200))
-
-class GroupMember(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
+    
 # --- データベース初期化（初回起動時） ---
 with app.app_context():
     db.create_all()
@@ -305,50 +295,6 @@ def applicant_page(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('ApplicantPage.html', user=user)
 
-@app.route('/GroupCreatePage', methods=['GET', 'POST'])
-def create_group():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    current_id = session['user_id']
-
-    if request.method == 'POST':
-        name = request.form['group_name']
-        description = request.form['description']
-        member_ids = request.form.getlist('members')
-
-        new_group = Group(name=name, description=description)
-        db.session.add(new_group)
-        db.session.commit()
-
-        # 作成者を含むメンバー追加
-        all_member_ids = set(member_ids)
-        all_member_ids.add(str(current_id))
-
-        for uid in all_member_ids:
-            db.session.add(GroupMember(group_id=new_group.id, user_id=int(uid)))
-
-        db.session.commit()
-        return redirect(url_for('home'))
-
-    # 友達一覧取得
-    accepted_requests = FriendRequest.query.filter(
-    ((FriendRequest.from_user_id == current_id) | (FriendRequest.to_user_id == current_id)) &
-    (FriendRequest.status == 'accepted')
-    ).all()
-
-
-    friend_ids = set()
-    for req in accepted_requests:
-        if req.from_user_id == current_id:
-            friend_ids.add(req.to_user_id)
-        else:
-            friend_ids.add(req.from_user_id)
-
-    friends = User.query.filter(User.id.in_(friend_ids)).all()
-
-    return render_template('GroupCreatePage.html', friends=friends)
-
 # --- ログアウト ---
 @app.route('/logout')
 def logout():
@@ -358,6 +304,30 @@ def logout():
 # --- アプリ起動 ---
 if __name__ == '__main__':
     app.run(debug=True)
+    
+#---1日の成果入力---
+@app.route("/AchievementCreatePage", methods=["GET", "POST"])
+def create_achievement():
+    message = ""
+    if request.method == "POST":
+        date = request.form.get("date")
+        steps = request.form.get("steps")
+        weight = request.form.get("weight")
+
+        if not date or not steps or not weight:
+            message = "すべての項目を入力してください。"
+        else:
+            try:
+                steps = int(steps)
+                weight = float(weight)
+                # --- 保存処理 ---
+                # 例：DBに保存 or ファイルに保存
+                flash("1日の成果を保存しました。")
+                return redirect(url_for("home"))
+            except ValueError:
+                message = "数値を正しく入力してください。"
+
+    return render_template("AchievementCreatePage.html", message=message)
     
 #---活動報告投稿---
 @app.route("/activity_report/create", methods=["GET", "POST"])
@@ -388,31 +358,5 @@ def group_page():
     ]
     return render_template("group_page.html", reports=reports, group_name="健康習慣グループ")
 
-#---1日の成果入力---
-@app.route("/achievements/create", methods=["GET", "POST"])
-def create_achievement():
-    message = ""
-    if request.method == "POST":
-        date = request.form.get("date")
-        steps = request.form.get("steps")
-        weight = request.form.get("weight")
 
-        if not date or not steps or not weight:
-            message = "すべての項目を入力してください。"
-        else:
-            try:
-                steps = int(steps)
-                weight = float(weight)
-                # --- 保存処理 ---
-                # 例：DBに保存 or ファイルに保存
-                flash("1日の成果を保存しました。")
-                return redirect(url_for("home"))
-            except ValueError:
-                message = "数値を正しく入力してください。"
 
-    return render_template("achievements_of_the_day_create.html", message=message)
-
-@app.route("/achievement/create", methods=["GET", "POST"])
-def create_achievement():
-    # 1日の成果入力ページを表示 or POST処理
-    ...
