@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }}さんのプロフィール{% endblock %}
+
+{% block content %}
+<h1>{{ user.username }} さんのプロフィール</h1>
+<ul>
+    <li>メール：{{ user.email }}</li>
+    <li>性別：{{ user.gender }}</li>
+    <li>身長：{{ user.tall }} cm</li>
+    <li>目標体重：{{ user.goalweight }} kg</li>
+    <li>誕生日：{{ user.birthdate }}</li>
+</ul>
+<p><a href="{{ url_for('friend_list') }}" class="button-link">友達一覧に戻る</a></p>
+{% endblock %}
