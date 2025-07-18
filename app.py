@@ -191,21 +191,22 @@ def friend_apply():
         return redirect(url_for('login'))
 
     target_id = int(request.form['target_id'])
-    from_id = session['user_id']
 
-    # 既に申請済みか確認
-    existing = FriendRequest.query.filter_by(from_user_id=from_id, to_user_id=target_id).first()
+    # 双方向の既存申請確認
+    existing = FriendRequest.query.filter(
+        ((FriendRequest.from_user_id == session['user_id']) & (FriendRequest.to_user_id == target_id)) |
+        ((FriendRequest.from_user_id == target_id) & (FriendRequest.to_user_id == session['user_id']))
+    ).first()
 
     if not existing:
         new_request = FriendRequest(
-            from_user_id=from_id,
+            from_user_id=session['user_id'],
             to_user_id=target_id,
             status='pending'
         )
         db.session.add(new_request)
         db.session.commit()
 
-    # target_idをURLに渡す
     return redirect(url_for('friend_apply_confirm', target_id=target_id))
 
 # ---友達申請確認---
