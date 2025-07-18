@@ -19,7 +19,11 @@
     </div>
     <div class="form-group">
         <label for="gender">性別：</label>
-        <input type="text" name="gender" value="{{ user.gender }}">
+        <select name="gender" id="gender" required>
+            <option value="">選択してください</option>
+            <option value="male" {% if user.gender == 'male' %}selected{% endif %}>男性</option>
+            <option value="female" {% if user.gender == 'female' %}selected{% endif %}>女性</option>
+        </select><br>
     </div>
     <div class="form-group">
         <label for="goalweight">目標体重(kg)：</label>
