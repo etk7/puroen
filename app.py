@@ -332,3 +332,4 @@ def group_page():
         {"date": "2025-07-17", "content": "雨だったので室内でヨガを30分しました。"},
     ]
     return render_template("group_page.html", reports=reports, group_name="健康習慣グループ")
+
