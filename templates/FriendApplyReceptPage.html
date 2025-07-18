@@ -10,7 +10,7 @@
         <div class="user-card">
             <p><strong>{{ req.from_user.username }}</strong>さんからの申請</p>
 
-            <form method="POST" action="{{ url_for('friend_apply_recept', request_id=req.id) }}">
+            <form method="POST" action="{{ url_for('friend_apply_accept', request_id=req.id) }}">
                 <button type="submit" name="action" value="accept">承諾</button>
                 <button type="submit" name="action" value="reject">拒否</button>
             </form>
