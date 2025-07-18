@@ -3,9 +3,7 @@
 {% block title %}申請完了{% endblock %}
 
 {% block content %}
-<h1>申請確認</h1>
-
-<p>{{ message }}</p>
-
-<p><a href="{{ url_for('home') }}" class="button-link">ホームに戻る</a></p>
+<h1>友達申請を送信しました！</h1>
+<p><a href="{{ url_for('user_search') }}" class="button-link">検索に戻る</a></p>
+<p><a href="{{ url_for('home') }}" class="button-link">ホームへ戻る</a></p>
 {% endblock %}
