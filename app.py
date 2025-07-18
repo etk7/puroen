@@ -324,3 +324,13 @@ def create_activity_report():
 
     return render_template("activity_report_create.html", message=message)
 
+#---グループ画面---
+@app.route("/group")
+def group_page():
+    # 仮のデータ（本来はDBやファイルから取得）
+    reports = [
+        {"date": "2025-07-18", "content": "朝ラン5km、夕方ストレッチをしました。"},
+        {"date": "2025-07-17", "content": "雨だったので室内でヨガを30分しました。"},
+    ]
+    return render_template("group_page.html", reports=reports, group_name="健康習慣グループ")
+
