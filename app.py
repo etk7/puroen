@@ -334,3 +334,27 @@ def group_page():
     ]
     return render_template("group_page.html", reports=reports, group_name="健康習慣グループ")
 
+#---1日の成果入力---
+@app.route("/achievements/create", methods=["GET", "POST"])
+def create_achievement():
+    message = ""
+    if request.method == "POST":
+        date = request.form.get("date")
+        steps = request.form.get("steps")
+        weight = request.form.get("weight")
+
+        if not date or not steps or not weight:
+            message = "すべての項目を入力してください。"
+        else:
+            try:
+                steps = int(steps)
+                weight = float(weight)
+                # --- 保存処理 ---
+                # 例：DBに保存 or ファイルに保存
+                flash("1日の成果を保存しました。")
+                return redirect(url_for("home"))
+            except ValueError:
+                message = "数値を正しく入力してください。"
+
+    return render_template("achievements_of_the_day_create.html", message=message)
+
