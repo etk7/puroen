@@ -258,4 +258,21 @@ if __name__ == '__main__':
     app.run(debug=True)
     
 #---活動報告投稿---
+@app.route("/activity_report/create", methods=["GET", "POST"])
+def create_activity_report():
+    message = ""
+    if request.method == "POST":
+        group = request.form.get("group", "").strip()
+        report = request.form.get("report", "").strip()
+
+        if not group or not report:
+            message = "全ての項目を入力してください。"
+        elif len(report) > 500:
+            message = "活動内容は500文字以内で入力してください。"
+        else:
+            # 保存処理など（例：DB登録）
+            flash("活動報告を投稿しました。")
+            return redirect(url_for("group_page"))
+
+    return render_template("activity_report_create.html", message=message)
 
