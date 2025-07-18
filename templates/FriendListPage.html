@@ -10,7 +10,7 @@
         {% for friend in friends %}
             <li>
                 {{ friend.username }}
-                <form action="{{ url_for('applicant_page', user_id=friend.id) }}" method="GET" style="display:inline;">
+                <form action="{{ url_for('friend_info', user_id=friend.id) }}" method="GET" style="display:inline;">
                     <button type="submit">プロフィールを見る</button>
                 </form>
             </li>
