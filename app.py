@@ -305,30 +305,7 @@ def logout():
 if __name__ == '__main__':
     app.run(debug=True)
     
-#---1日の成果入力---
-@app.route("/AchievementCreatePage", methods=["GET", "POST"])
-def create_achievement():
-    message = ""
-    if request.method == "POST":
-        date = request.form.get("date")
-        steps = request.form.get("steps")
-        weight = request.form.get("weight")
 
-        if not date or not steps or not weight:
-            message = "すべての項目を入力してください。"
-        else:
-            try:
-                steps = int(steps)
-                weight = float(weight)
-                # --- 保存処理 ---
-                # 例：DBに保存 or ファイルに保存
-                flash("1日の成果を保存しました。")
-                return redirect(url_for("home"))
-            except ValueError:
-                message = "数値を正しく入力してください。"
-
-    return render_template("AchievementCreatePage.html", message=message)
-    
 #---活動報告投稿---
 @app.route("/activity_report/create", methods=["GET", "POST"])
 def create_activity_report():
