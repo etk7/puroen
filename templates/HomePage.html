@@ -64,8 +64,10 @@
         <!-- 友達一覧-->
         <a href="{{ url_for('friend_list') }}" class="button-link">友達一覧</a>
 
-        <!--1日の成果入力-->
-        <a href="{{ url_for('create_achivement') }}" class="button-link">1日の成果入力</a>
+        <!-- 1日の成果入力：★追加部分 -->
+        <form action="{{ url_for('create_achievement') }}" method="get">
+            <button type="submit">1日の成果入力</button>
+        </form>
 
         <!-- ログアウト -->
         <a href="{{ url_for('logout') }}" class="button-link">ログアウト</a>
