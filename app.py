@@ -256,3 +256,6 @@ def logout():
 # --- アプリ起動 ---
 if __name__ == '__main__':
     app.run(debug=True)
+    
+#---活動報告投稿---
+
