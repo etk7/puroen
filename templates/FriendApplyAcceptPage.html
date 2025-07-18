@@ -1,24 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}友達申請の確認{% endblock %}
+{% block title %}申請結果{% endblock %}
 
 {% block content %}
-<h1>受信した友達申請</h1>
+<h1>友達申請の結果</h1>
+<p>{{ message }}</p>
 
-{% if requests %}
-    {% for req in requests %}
-        <div class="user-card">
-            <p><strong>{{ req.from_user.username }}</strong>さんからの申請</p>
-
-            <form method="POST" action="{{ url_for('friend_apply_recept', request_id=req.id) }}">
-                <button type="submit" name="action" value="accept">承諾</button>
-                <button type="submit" name="action" value="reject">拒否</button>
-            </form>
-        </div>
-    {% endfor %}
-{% else %}
-    <p>現在、友達申請はありません。</p>
-{% endif %}
-
+<p><a href="{{ url_for('friend_apply_accept') }}" class="button-link">申請一覧に戻る</a></p>
 <p><a href="{{ url_for('home') }}" class="button-link">ホームに戻る</a></p>
 {% endblock %}
