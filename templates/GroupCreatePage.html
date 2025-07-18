@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1>グループ作成</h1>
-<form method="POST" action="{{ url_for('create_group') }}">
+<form method="POST" action="{{ url_for('group_create') }}">
     <label for="group_name">グループ名：</label>
     <input type="text" name="group_name" required><br>
 
