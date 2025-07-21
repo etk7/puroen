@@ -371,6 +371,41 @@ def create_group():
 
     return render_template('GroupCreatePage.html', friends=friends)
 
+# --- 成果入力ページ ---
+@app.route('/AchievementCreatePage', methods=['GET', 'POST'])
+def achievement_create():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        date = request.form['date']
+        steps = request.form['steps']
+        weight = request.form['weight']
+
+        return render_template('AchievementConfirmPage.html',
+                               date=date,
+                               steps=steps,
+                               weight=weight)
+
+    return render_template('AchievementCreatePage.html')
+
+
+# --- 成果入力確認ページ ---
+@app.route('/AchievementCreatePage/confirm', methods=['POST'])
+def achievement_confirm():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    date = request.form['date']
+    steps = request.form['steps']
+    weight = request.form['weight']
+
+    # 入力内容の確認画面から、ここで保存処理をするのもOK
+    return render_template('AchievementCompletePage.html',
+                           date=date,
+                           steps=steps,
+                           weight=weight)
+
 # --- ログアウト ---
 @app.route('/logout')
 def logout():
