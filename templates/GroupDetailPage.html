@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} のページ{% endblock %}
+
+{% block content %}
+<h1>{{ group.name }}</h1>
+<p>{{ group.description }}</p>
+
+<hr>
+
+<h2>活動報告投稿</h2>
+<form method="POST">
+    <textarea name="content" rows="3" required></textarea><br>
+    <button type="submit">投稿する</button>
+</form>
+
+<hr>
+
+<h2>投稿一覧</h2>
+{% for post in posts %}
+    <div class="post-card">
+        <p><strong>{{ post.user.username }}</strong> さん：</p>
+        <p>{{ post.content }}</p>
+        <form method="POST" action="{{ url_for('like_post', group_id=group.id, post_id=post.id) }}">
+            <button type="submit">👍 いいね ({{ post.likes|length }})</button>
+        </form>
+        <hr>
+    </div>
+{% else %}
+    <p>投稿はまだありません。</p>
+{% endfor %}
+
+<p><a href="{{ url_for('home') }}" class="button-link">ホームに戻る</a></p>
+{% endblock %}
