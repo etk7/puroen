@@ -171,12 +171,34 @@ def group_create():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
+    current_user_id = session['user_id']
+
+    # --- 承認済みの友達（双方向）を取得 ---
+    friend_requests = FriendRequest.query.filter_by(status='accepted').filter(
+        (FriendRequest.from_user_id == current_user_id) | 
+        (FriendRequest.to_user_id == current_user_id)
+    ).all()
+
+    friend_ids = []
+    for fr in friend_requests:
+        if fr.from_user_id == current_user_id:
+            friend_ids.append(fr.to_user_id)
+        else:
+            friend_ids.append(fr.from_user_id)
+
+    friends = User.query.filter(User.id.in_(friend_ids)).all()
+
     if request.method == 'POST':
         group_name = request.form['group_name']
         description = request.form['description']
-        return render_template('GroupCreateConfirmPage.html', group_name=group_name, description=description)
+        selected_members = request.form.getlist('members')
+        return render_template('GroupCreateConfirmPage.html',
+                               group_name=group_name,
+                               description=description,
+                               members=selected_members,
+                               friends=friends)
 
-    return render_template('GroupCreatePage.html')
+    return render_template('GroupCreatePage.html', friends=friends)
 
 # ---グループ作成確認---
 @app.route('/GroupCreateConfirmPage', methods=['POST'])
@@ -358,56 +380,3 @@ def logout():
 # --- アプリ起動 ---
 if __name__ == '__main__':
     app.run(debug=True)
-    
-#---活動報告投稿---
-@app.route("/activity_report/create", methods=["GET", "POST"])
-def create_activity_report():
-    message = ""
-    if request.method == "POST":
-        group = request.form.get("group", "").strip()
-        report = request.form.get("report", "").strip()
-
-        if not group or not report:
-            message = "全ての項目を入力してください。"
-        elif len(report) > 500:
-            message = "活動内容は500文字以内で入力してください。"
-        else:
-            # 保存処理など（例：DB登録）
-            flash("活動報告を投稿しました。")
-            return redirect(url_for("group_page"))
-
-    return render_template("activity_report_create.html", message=message)
-
-#---グループ画面---
-@app.route("/group")
-def group_page():
-    # 仮のデータ（本来はDBやファイルから取得）
-    reports = [
-        {"date": "2025-07-18", "content": "朝ラン5km、夕方ストレッチをしました。"},
-        {"date": "2025-07-17", "content": "雨だったので室内でヨガを30分しました。"},
-    ]
-    return render_template("group_page.html", reports=reports, group_name="健康習慣グループ")
-
-#---1日の成果入力---
-@app.route("/AchievementCreatePage", methods=["GET", "POST"])
-def create_achievement():
-    message = ""
-    if request.method == "POST":
-        date = request.form.get("date")
-        steps = request.form.get("steps")
-        weight = request.form.get("weight")
-
-        if not date or not steps or not weight:
-            message = "すべての項目を入力してください。"
-        else:
-            try:
-                steps = int(steps)
-                weight = float(weight)
-                # --- 保存処理 ---
-                # 例：DBに保存 or ファイルに保存
-                flash("1日の成果を保存しました。")
-                return redirect(url_for("home"))
-            except ValueError:
-                message = "数値を正しく入力してください。"
-
-    return render_template("AchievementCreatePage.html", message=message)
