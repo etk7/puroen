@@ -42,7 +42,7 @@
     <div class="button-container">
         <!-- 友達検索 -->
         <form action="{{ url_for('user_search') }}" method="get">
-            <button type="submit">友達検索</button>
+            <button type="submit">ユーザ検索</button>
         </form>
 
         <!-- グループ作成 -->
@@ -55,14 +55,11 @@
             <button type="submit">友達申請受信</button>
         </form>
 
-        <!-- プロフィール確認 -->
-        <a href="{{ url_for('profile') }}" class="button-link">プロフィール確認</a>
+        <!-- マイプロフィール -->
+        <a href="{{ url_for('profile') }}" class="button-link">マイプロフィール</a>
 
-        <!-- アカウント情報変更 -->
-        <a href="{{ url_for('edit_profile') }}" class="button-link">アカウント情報変更</a>
-
-        <!-- 友達一覧-->
-        <a href="{{ url_for('friend_list') }}" class="button-link">友達一覧</a>
+        <!-- 友達リスト-->
+        <a href="{{ url_for('friend_list') }}" class="button-link">友達リスト</a>
 
         <!-- ログアウト -->
         <a href="{{ url_for('logout') }}" class="button-link">ログアウト</a>
