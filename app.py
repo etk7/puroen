@@ -1,46 +1,16 @@
 from flask import Flask, render_template, request, redirect, session, url_for
-from flask_sqlalchemy import SQLAlchemy
+from models import db, User, FriendRequest, Achievement
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
 import os
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key')  # セッションキー
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-db = SQLAlchemy(app)
 
-# --- モデル定義 ---
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    birthdate = db.Column(db.String(10))
-    tall = db.Column(db.Float)
-    gender = db.Column(db.String(10))
-    goalweight = db.Column(db.Float)
+db.init_app(app)
+migrate = Migrate(app, db)
 
-class FriendRequest(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    from_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    to_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    status = db.Column(db.String(20), default='pending')
-
-    from_user = db.relationship('User', foreign_keys=[from_user_id])
-    to_user = db.relationship('User', foreign_keys=[to_user_id])
-
-class Group(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(200))
-
-class GroupMember(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-# --- データベース初期化（初回起動時） ---
-with app.app_context():
-    db.create_all()
 
 # --- トップページ（ログイン or 登録選択） ---
 @app.route('/')
@@ -164,57 +134,6 @@ def search_result():
 
 
     return render_template('SearchResultPage.html', keyword=keyword, results=results)
-
-# ---グループ作成---
-@app.route('/GroupCreatePage', methods=['GET', 'POST'])
-def group_create():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    current_user_id = session['user_id']
-
-    # --- 承認済みの友達（双方向）を取得 ---
-    friend_requests = FriendRequest.query.filter_by(status='accepted').filter(
-        (FriendRequest.from_user_id == current_user_id) | 
-        (FriendRequest.to_user_id == current_user_id)
-    ).all()
-
-    friend_ids = []
-    for fr in friend_requests:
-        if fr.from_user_id == current_user_id:
-            friend_ids.append(fr.to_user_id)
-        else:
-            friend_ids.append(fr.from_user_id)
-
-    friends = User.query.filter(User.id.in_(friend_ids)).all()
-
-    if request.method == 'POST':
-        group_name = request.form['group_name']
-        description = request.form['description']
-        selected_members = request.form.getlist('members')
-        return render_template('GroupCreateConfirmPage.html',
-                               group_name=group_name,
-                               description=description,
-                               members=selected_members,
-                               friends=friends)
-
-    return render_template('GroupCreatePage.html', friends=friends)
-
-# ---グループ作成確認---
-@app.route('/GroupCreateConfirmPage', methods=['POST'])
-def confirm_group_creation():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    group_name = request.form['group_name']
-    description = request.form['description']
-
-    # モデルがある場合はここで保存処理（例）
-    new_group = Group(name=group_name, description=description, owner_id=session['user_id'])
-    db.session.add(new_group)
-    db.session.commit()
-
-    return redirect(url_for('home'))  # またはグループ詳細ページなど
 
 # ---友達申請---
 @app.route('/FriendApplyPage', methods=['POST'])
