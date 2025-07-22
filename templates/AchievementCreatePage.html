@@ -3,9 +3,9 @@
 {% block title %}1日の成果入力{% endblock %}
 
 {% block content %}
-<h1>1日の成果を入力する</h1>
+<h1>1日の成果入力</h1>
 
-<form method="POST">
+<form method="POST" action="{{ url_for('achievement_create') }}">
     <div class="form-group">
         <label for="date">日付：</label><br>
         <input type="date" name="date" required>
@@ -16,19 +16,18 @@
         <label for="steps">歩数：</label><br>
         <input type="number" name="steps" min="0" required>
     </div>
-    <br>
 
     <div class="form-group">
         <label for="weight">体重（kg）：</label><br>
         <input type="number" name="weight" step="0.1" min="0" required>
     </div>
-    <br>
 
-    <button type="submit">保存</button>
+    <!-- 登録ボタン（確認画面に進む） -->
+    <button type="submit">入力内容を確認する</button>
 </form>
 
 {% if message %}
-    <p style="color: red;">{{ message }}</p>
+    <p style="color:red;">{{ message }}</p>
 {% endif %}
 
 <p><a href="{{ url_for('home') }}" class="button-link">ホームに戻る</a></p>
