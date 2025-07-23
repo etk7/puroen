@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}自分の成果一覧{% endblock %}
+
+{% block content %}
+<h1>自分の成果一覧</h1>
+
+{% if achievements %}
+  <table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+      <tr>
+        <th>日付</th>
+        <th>歩数</th>
+        <th>体重 (kg)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ach in achievements %}
+      <tr>
+        <td>{{ ach.date }}</td>
+        <td>{{ ach.steps }} 歩</td>
+        <td>{{ "%.1f"|format(ach.weight) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>まだ成果が記録されていません。</p>
+{% endif %}
+
+<p><a href="{{ url_for('home') }}" class="button-link">ホームに戻る</a></p>
+{% endblock %}
