@@ -1,28 +1,13 @@
-{% extends "base.html" %}
+<h1>成果確認</h1>
+<p>日付：{{ date }}</p>
+<p>体重：{{ weight }} kg</p>
+<p>歩数：{{ steps }} 歩</p>
 
-{% block title %}1日の成果入力確認{% endblock %}
-
-{% block content %}
-<h1>1日の成果入力確認</h1>
-
-<p>以下の内容で登録しますか？</p>
-
-<ul>
-    <li><strong>日付：</strong> {{ date }}</li>
-    <li><strong>歩数：</strong> {{ steps }} 歩</li>
-    <li><strong>体重：</strong> {{ weight }} kg</li>
-</ul>
-
-<!-- 成果を登録（確定） -->
-<form method="POST" action="{{ url_for('achievement_confirm') }}">
+<form method="post" action="{{ url_for('achievement_confirm') }}">
     <input type="hidden" name="date" value="{{ date }}">
-    <input type="hidden" name="steps" value="{{ steps }}">
     <input type="hidden" name="weight" value="{{ weight }}">
-    <button type="submit">登録を確定</button>
+    <input type="hidden" name="steps" value="{{ steps }}">
+    <button type="submit">この内容で保存する</button>
 </form>
 
-<!-- 戻って修正 -->
-<form method="GET" action="{{ url_for('achievement_create') }}">
-    <button type="submit">成果を入力し直す</button>
-</form>
-{% endblock %}
+<a href="{{ url_for('achievement_create') }}" class="button-link">戻る</a>
