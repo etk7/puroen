@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>歩数カレンダー</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        td {
+            width: 14%;
+            height: 80px;
+            text-align: center;
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ year }}年{{ month }}月の歩数カレンダー</h1>
+    <table border="1">
+        <tr>
+            <th>日</th><th>月</th><th>火</th><th>水</th>
+            <th>木</th><th>金</th><th>土</th>
+        </tr>
+        {% for week in weeks %}
+        <tr>
+            {% for day in week %}
+            {% set date_str = day.strftime('%Y-%m-%d') %}
+            <td style="background-color: {{ step_map.get(date_str, '#e0e0e0') }}">
+                {{ day.day }}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
