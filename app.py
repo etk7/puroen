@@ -11,6 +11,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db.init_app(app)
 migrate = Migrate(app, db)
 
+from flask import g
+import sqlite3
+
+def get_db():
+    if 'db' not in g:
+        g.db = sqlite3.connect('users.db')
+        g.db.row_factory = sqlite3.Row
+    return g.db
+
 
 # --- トップページ（ログイン or 登録選択） ---
 @app.route('/')
@@ -246,50 +255,6 @@ def applicant_page(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('ApplicantPage.html', user=user)
 
-@app.route('/GroupCreatePage', methods=['GET', 'POST'])
-def create_group():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    current_id = session['user_id']
-
-    if request.method == 'POST':
-        name = request.form['group_name']
-        description = request.form['description']
-        member_ids = request.form.getlist('members')
-
-        new_group = Group(name=name, description=description)
-        db.session.add(new_group)
-        db.session.commit()
-
-        # 作成者を含むメンバー追加
-        all_member_ids = set(member_ids)
-        all_member_ids.add(str(current_id))
-
-        for uid in all_member_ids:
-            db.session.add(GroupMember(group_id=new_group.id, user_id=int(uid)))
-
-        db.session.commit()
-        return redirect(url_for('home'))
-
-    # 友達一覧取得
-    accepted_requests = FriendRequest.query.filter(
-    ((FriendRequest.from_user_id == current_id) | (FriendRequest.to_user_id == current_id)) &
-    (FriendRequest.status == 'accepted')
-    ).all()
-
-
-    friend_ids = set()
-    for req in accepted_requests:
-        if req.from_user_id == current_id:
-            friend_ids.add(req.to_user_id)
-        else:
-            friend_ids.add(req.from_user_id)
-
-    friends = User.query.filter(User.id.in_(friend_ids)).all()
-
-    return render_template('GroupCreatePage.html', friends=friends)
-
 # --- 成果入力ページ ---
 @app.route('/AchievementCreatePage', methods=['GET', 'POST'])
 def achievement_create():
@@ -308,22 +273,47 @@ def achievement_create():
 
     return render_template('AchievementCreatePage.html')
 
+import logging
 
 # --- 成果入力確認ページ ---
-@app.route('/AchievementCreatePage/confirm', methods=['POST'])
+@app.route('/AhievementConfirmPage', methods=['GET', 'POST'])
 def achievement_confirm():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    date = request.form['date']
-    steps = request.form['steps']
-    weight = request.form['weight']
+    if request.method == 'POST':
+        date = request.form['date']
+        steps = request.form['steps']
+        weight = request.form['weight']
+        user_id = session['user_id']
 
-    # 入力内容の確認画面から、ここで保存処理をするのもOK
-    return render_template('AchievementCompletePage.html',
-                           date=date,
-                           steps=steps,
-                           weight=weight)
+        logging.warning(f"Saving achievement: user_id={user_id}, date={date}, steps={steps}, weight={weight}")
+
+        new_achievement = Achievement(
+            user_id=user_id,
+            date=date,
+            steps=int(steps),
+            weight=float(weight)
+        )
+        db.session.add(new_achievement)
+        db.session.commit()
+        return redirect(url_for('my_achievements'))
+
+    # GET時は確認画面表示
+    date = request.args.get('date')
+    steps = request.args.get('steps')
+    weight = request.args.get('weight')
+    return render_template('AchievementConfirmPage.html', date=date, steps=steps, weight=weight)
+
+# ---成果一覧---
+@app.route('/MyAchievementsPage')
+def my_achievements():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    achievements = Achievement.query.filter_by(user_id=user_id).order_by(Achievement.date.desc()).all()
+    return render_template('MyAchievementsPage.html', achievements=achievements)
 
 # --- ログアウト ---
 @app.route('/logout')
