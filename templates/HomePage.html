@@ -55,10 +55,13 @@
 
         <!-- 一日の成果入力-->
         <a href="{{ url_for('achievement_create') }}" class="button-link">一日の成果入力</a>
-
+        
+        <!--成果一覧-->
+        <a href="{{ url_for('my_achievements') }}" class="button-link">自分の成果一覧を見る</a>
+ 
         <!-- マイプロフィール -->
         <a href="{{ url_for('profile') }}" class="button-link">マイプロフィール</a>
-
+        
         <!-- ログアウト -->
         <a href="{{ url_for('logout') }}" class="button-link">ログアウト</a>
     </div>
