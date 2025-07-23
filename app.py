@@ -3,23 +3,33 @@ from models import db, User, FriendRequest, Achievement
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 import os
+import calendar
+from datetime import datetime
+import sqlite3
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key')  # セッションキー
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'users.db')
 
 db.init_app(app)
 migrate = Migrate(app, db)
 
-from flask import g
-import sqlite3
-
+# DB接続用の関数（SQLiteの生SQLを使う場合のみ）
 def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect('users.db')
-        g.db.row_factory = sqlite3.Row
-    return g.db
+    conn = sqlite3.connect('users.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
+# 歩数に応じた色を返す関数
+def get_color_for_steps(steps):
+    if steps >= 10000:
+        return "#4caf50"  # 緑
+    elif steps >= 5000:
+        return "#ffeb3b"  # 黄
+    elif steps > 0:
+        return "#f44336"  # 赤
+    else:
+        return "#e0e0e0"  # グレー（データなしや0歩）
 
 # --- トップページ（ログイン or 登録選択） ---
 @app.route('/')
@@ -273,8 +283,6 @@ def achievement_create():
 
     return render_template('AchievementCreatePage.html')
 
-import logging
-
 # --- 成果入力確認ページ ---
 @app.route('/AhievementConfirmPage', methods=['GET', 'POST'])
 def achievement_confirm():
@@ -286,8 +294,6 @@ def achievement_confirm():
         steps = request.form['steps']
         weight = request.form['weight']
         user_id = session['user_id']
-
-        logging.warning(f"Saving achievement: user_id={user_id}, date={date}, steps={steps}, weight={weight}")
 
         new_achievement = Achievement(
             user_id=user_id,
@@ -315,6 +321,39 @@ def my_achievements():
     achievements = Achievement.query.filter_by(user_id=user_id).order_by(Achievement.date.desc()).all()
     return render_template('MyAchievementsPage.html', achievements=achievements)
 
+# ---歩数カレンダー---
+@app.route('/step_calendar')
+def step_calendar():
+    # 本来はsessionからログインユーザーIDを取得
+    user_id = session.get('user_id', 1)  # 仮で1を使う
+
+    today = datetime.today()
+    year = today.year
+    month = today.month
+
+    first_day = datetime(year, month, 1)
+    last_day = datetime(year, month, calendar.monthrange(year, month)[1])
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT date, steps FROM achievement
+        WHERE user_id = ? AND date BETWEEN ? AND ?
+    """, (user_id, first_day.strftime('%Y-%m-%d'), last_day.strftime('%Y-%m-%d')))
+    rows = cur.fetchall()
+
+    step_map = {}
+    for row in rows:
+        step_map[row['date']] = get_color_for_steps(row['steps'])
+
+    cal = calendar.Calendar(firstweekday=6)  # 日曜始まり
+    weeks = cal.monthdatescalendar(year, month)
+
+    return render_template('StepCalendarPage.html',
+                           weeks=weeks,
+                           step_map=step_map,
+                           year=year,
+                           month=month)
 # --- ログアウト ---
 @app.route('/logout')
 def logout():
