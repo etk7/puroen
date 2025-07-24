@@ -337,6 +337,29 @@ def step_calendar():
 
     return render_template("StepCalendarPage.html", days=days, steps_data=steps_data)
 
+@app.route('/weight_graph')
+def weight_graph():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    con = sqlite3.connect("instance/users.db") 
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT date, weight FROM achievement
+        WHERE user_id = ?
+        ORDER BY date
+    """, (user_id,))
+    rows = cur.fetchall()
+    con.close()
+
+    labels = [row['date'] for row in rows]
+    weights = [row['weight'] for row in rows]
+
+    return render_template('WeightGraphPage.html', labels=labels, weights=weights)
+
 # --- ログアウト ---
 @app.route('/logout')
 def logout():
