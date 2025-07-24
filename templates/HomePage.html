@@ -62,6 +62,11 @@
         <!--歩数カレンダー-->
         <a href="{{ url_for('step_calendar') }}" class="button-link">歩数カレンダー</a>
 
+        <!-- 体重グラフページへのリンク -->
+        <form action="{{ url_for('weight_graph') }}" method="get">
+            <button type="submit">体重グラフ</button>
+        </form>
+
         <!-- マイプロフィール -->
         <a href="{{ url_for('profile') }}" class="button-link">マイプロフィール</a>
         
