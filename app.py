@@ -1,9 +1,13 @@
 from flask import Flask, render_template, request, redirect, session, url_for
-from flask_sqlalchemy import SQLAlchemy
+from models import db, User, FriendRequest, Achievement
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
 import os
+import calendar
+from datetime import datetime
+import sqlite3
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key')  # セッションキー
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'users.db')
 
@@ -140,57 +144,6 @@ def search_result():
 
     return render_template('SearchResultPage.html', keyword=keyword, results=results)
 
-# ---グループ作成---
-@app.route('/GroupCreatePage', methods=['GET', 'POST'])
-def group_create():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    current_user_id = session['user_id']
-
-    # --- 承認済みの友達（双方向）を取得 ---
-    friend_requests = FriendRequest.query.filter_by(status='accepted').filter(
-        (FriendRequest.from_user_id == current_user_id) | 
-        (FriendRequest.to_user_id == current_user_id)
-    ).all()
-
-    friend_ids = []
-    for fr in friend_requests:
-        if fr.from_user_id == current_user_id:
-            friend_ids.append(fr.to_user_id)
-        else:
-            friend_ids.append(fr.from_user_id)
-
-    friends = User.query.filter(User.id.in_(friend_ids)).all()
-
-    if request.method == 'POST':
-        group_name = request.form['group_name']
-        description = request.form['description']
-        selected_members = request.form.getlist('members')
-        return render_template('GroupCreateConfirmPage.html',
-                               group_name=group_name,
-                               description=description,
-                               members=selected_members,
-                               friends=friends)
-
-    return render_template('GroupCreatePage.html', friends=friends)
-
-# ---グループ作成確認---
-@app.route('/GroupCreateConfirmPage', methods=['POST'])
-def confirm_group_creation():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    group_name = request.form['group_name']
-    description = request.form['description']
-
-    # モデルがある場合はここで保存処理（例）
-    new_group = Group(name=group_name, description=description, owner_id=session['user_id'])
-    db.session.add(new_group)
-    db.session.commit()
-
-    return redirect(url_for('home'))  # またはグループ詳細ページなど
-
 # ---友達申請---
 @app.route('/FriendApplyPage', methods=['POST'])
 def friend_apply():
@@ -302,53 +255,9 @@ def applicant_page(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('ApplicantPage.html', user=user)
 
-@app.route('/GroupCreatePage', methods=['GET', 'POST'])
-def create_group():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    current_id = session['user_id']
-
-    if request.method == 'POST':
-        name = request.form['group_name']
-        description = request.form['description']
-        member_ids = request.form.getlist('members')
-
-        new_group = Group(name=name, description=description)
-        db.session.add(new_group)
-        db.session.commit()
-
-        # 作成者を含むメンバー追加
-        all_member_ids = set(member_ids)
-        all_member_ids.add(str(current_id))
-
-        for uid in all_member_ids:
-            db.session.add(GroupMember(group_id=new_group.id, user_id=int(uid)))
-
-        db.session.commit()
-        return redirect(url_for('home'))
-
-    # 友達一覧取得
-    accepted_requests = FriendRequest.query.filter(
-    ((FriendRequest.from_user_id == current_id) | (FriendRequest.to_user_id == current_id)) &
-    (FriendRequest.status == 'accepted')
-    ).all()
-
-
-    friend_ids = set()
-    for req in accepted_requests:
-        if req.from_user_id == current_id:
-            friend_ids.add(req.to_user_id)
-        else:
-            friend_ids.add(req.from_user_id)
-
-    friends = User.query.filter(User.id.in_(friend_ids)).all()
-
-    return render_template('GroupCreatePage.html', friends=friends)
-
 # --- 成果入力ページ ---
 @app.route('/AchievementCreatePage', methods=['GET', 'POST'])
-def daily_input():
+def achievement_create():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
@@ -364,9 +273,9 @@ def daily_input():
 
     return render_template('AchievementCreatePage.html')
 
-#---成果入力確認ページ---
-@app.route('/AchievementCreatePage', methods=['GET', 'POST'])
-def daily_input():
+# --- 成果入力確認ページ ---
+@app.route('/AhievementConfirmPage', methods=['GET', 'POST'])
+def achievement_confirm():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
@@ -374,18 +283,27 @@ def daily_input():
         date = request.form['date']
         steps = request.form['steps']
         weight = request.form['weight']
+        user_id = session['user_id']
 
-        # 入力内容の確認のみ
-        return render_template('AchievementConfirmPage.html',
-                               date=date,
-                               steps=steps,
-                               weight=weight)
+        new_achievement = Achievement(
+            user_id=user_id,
+            date=date,
+            steps=int(steps),
+            weight=float(weight)
+        )
+        db.session.add(new_achievement)
+        db.session.commit()
+        return redirect(url_for('my_achievements'))
 
-    return render_template('AchievementCreatePage.html')
+    # GET時は確認画面表示
+    date = request.args.get('date')
+    steps = request.args.get('steps')
+    weight = request.args.get('weight')
+    return render_template('AchievementConfirmPage.html', date=date, steps=steps, weight=weight)
 
-#---体重推移グラフ---
-@app.route('/WeightGraphPage')
-def weight_graph():
+# ---成果一覧---
+@app.route('/MyAchievementsPage')
+def my_achievements():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
