@@ -1,37 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <title>歩数カレンダー</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        td {
-            width: 14%;
-            height: 80px;
-            text-align: center;
-            vertical-align: top;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>歩数カレンダー</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 30px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: 0 auto 30px auto;
+    }
+
+    td {
+      border: 1px solid #ccc;
+      width: 80px;
+      height: 80px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    /* 歩数に応じた色（元のカラー） */
+    .step0 { background-color: white; }
+    .step1 { background-color: #f0f9e8; }
+    .step2 { background-color: #ccebc5; }
+    .step3 { background-color: #a8ddb5; }
+    .step4 { background-color: #7bccc4; }
+    .step5 { background-color: #4eb3d3; }
+    .step6 { background-color: #2b8cbe; }
+
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4eb3d3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .button:hover {
+      background-color: #2b8cbe;
+    }
+  </style>
 </head>
 <body>
-    <h1>{{ year }}年{{ month }}月の歩数カレンダー</h1>
-    <table border="1">
-        <tr>
-            <th>日</th><th>月</th><th>火</th><th>水</th>
-            <th>木</th><th>金</th><th>土</th>
-        </tr>
-        {% for week in weeks %}
-        <tr>
-            {% for day in week %}
-            {% set date_str = day.strftime('%Y-%m-%d') %}
-            <td style="background-color: {{ step_map.get(date_str, '#e0e0e0') }}">
-                {{ day.day }}
-            </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
+  <h1>{{ days[0].year }}年{{ days[0].month }}月の歩数カレンダー</h1>
+
+  <table>
+    <tr>
+      {% for day in days %}
+        {% if loop.index0 % 7 == 0 and not loop.first %}
+          </tr><tr>
+        {% endif %}
+
+        {% set steps = steps_data.get(day.isoformat(), 0) %}
+        {% if steps == 0 %}
+          {% set cls = "step0" %}
+        {% elif steps < 5000 %}
+          {% set cls = "step1" %}
+        {% elif steps < 10000 %}
+          {% set cls = "step2" %}
+        {% elif steps < 15000 %}
+          {% set cls = "step3" %}
+        {% elif steps < 20000 %}
+          {% set cls = "step4" %}
+        {% elif steps < 25000 %}
+          {% set cls = "step5" %}
+        {% else %}
+          {% set cls = "step6" %}
+        {% endif %}
+
+        <td class="{{ cls }}">
+          {{ day.day }}<br>
+          {{ steps }}歩
+        </td>
+      {% endfor %}
+    </tr>
+  </table>
+
+  <!-- ホームに戻るボタン -->
+  <a href="{{ url_for('home') }}" class="button">ホームに戻る</a>
+
 </body>
 </html>
