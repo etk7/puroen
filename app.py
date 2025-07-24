@@ -16,20 +16,10 @@ migrate = Migrate(app, db)
 
 # DB接続用の関数（SQLiteの生SQLを使う場合のみ）
 def get_db():
-    conn = sqlite3.connect('users.db')
+    db_path = os.path.join(app.instance_path, 'users.db')
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
-
-# 歩数に応じた色を返す関数
-def get_color_for_steps(steps):
-    if steps >= 10000:
-        return "#4caf50"  # 緑
-    elif steps >= 5000:
-        return "#ffeb3b"  # 黄
-    elif steps > 0:
-        return "#f44336"  # 赤
-    else:
-        return "#e0e0e0"  # グレー（データなしや0歩）
 
 # --- トップページ（ログイン or 登録選択） ---
 @app.route('/')
@@ -324,36 +314,29 @@ def my_achievements():
 # ---歩数カレンダー---
 @app.route('/step_calendar')
 def step_calendar():
-    # 本来はsessionからログインユーザーIDを取得
-    user_id = session.get('user_id', 1)  # 仮で1を使う
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
 
+    user_id = session['user_id']
     today = datetime.today()
-    year = today.year
-    month = today.month
+    year, month = today.year, today.month
 
-    first_day = datetime(year, month, 1)
-    last_day = datetime(year, month, calendar.monthrange(year, month)[1])
+    # 月の日付リスト作成
+    cal = calendar.Calendar(firstweekday=6)
+    days = [day for week in cal.monthdatescalendar(year, month) for day in week if day.month == month]
 
+    # DBから歩数取得
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
         SELECT date, steps FROM achievement
-        WHERE user_id = ? AND date BETWEEN ? AND ?
-    """, (user_id, first_day.strftime('%Y-%m-%d'), last_day.strftime('%Y-%m-%d')))
+        WHERE user_id = ? AND strftime('%Y-%m', date) = ?
+    """, (user_id, f"{year}-{month:02}"))
     rows = cur.fetchall()
+    steps_data = {row["date"]: row["steps"] for row in rows}
 
-    step_map = {}
-    for row in rows:
-        step_map[row['date']] = get_color_for_steps(row['steps'])
+    return render_template("StepCalendarPage.html", days=days, steps_data=steps_data)
 
-    cal = calendar.Calendar(firstweekday=6)  # 日曜始まり
-    weeks = cal.monthdatescalendar(year, month)
-
-    return render_template('StepCalendarPage.html',
-                           weeks=weeks,
-                           step_map=step_map,
-                           year=year,
-                           month=month)
 # --- ログアウト ---
 @app.route('/logout')
 def logout():
