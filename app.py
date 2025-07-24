@@ -318,14 +318,16 @@ def step_calendar():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    today = datetime.today()
-    year, month = today.year, today.month
 
-    # 月の日付リスト作成
-    cal = calendar.Calendar(firstweekday=6)
+    # クエリパラメータから年・月を取得（なければ今月）
+    year = int(request.args.get('year', datetime.today().year))
+    month = int(request.args.get('month', datetime.today().month))
+
+    # カレンダー用の日付リストを作成
+    cal = calendar.Calendar(firstweekday=6)  # 日曜日始まり
     days = [day for week in cal.monthdatescalendar(year, month) for day in week if day.month == month]
 
-    # DBから歩数取得
+    # DBから該当月の歩数データを取得
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
@@ -335,7 +337,12 @@ def step_calendar():
     rows = cur.fetchall()
     steps_data = {row["date"]: row["steps"] for row in rows}
 
-    return render_template("StepCalendarPage.html", days=days, steps_data=steps_data)
+    return render_template("StepCalendarPage.html",
+                           days=days,
+                           steps_data=steps_data,
+                           year=year,
+                           month=month)
+
 
 @app.route('/weight_graph')
 def weight_graph():
