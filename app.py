@@ -343,29 +343,46 @@ def step_calendar():
                            year=year,
                            month=month)
 
-
+#---体重推移グラフ---
 @app.route('/weight_graph')
 def weight_graph():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    user_id = session['user_id']
-    con = sqlite3.connect("instance/users.db") 
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
+    from datetime import datetime
+    import calendar
 
+    user_id = session['user_id']
+
+    # クエリから年・月を取得（なければ現在の年月）
+    year = int(request.args.get('year', datetime.today().year))
+    month = int(request.args.get('month', datetime.today().month))
+
+    # 月初〜月末の範囲を作成
+    start_date = f"{year}-{month:02d}-01"
+    last_day = calendar.monthrange(year, month)[1]
+    end_date = f"{year}-{month:02d}-{last_day:02d}"
+
+    # DBから該当月の体重データを取得
+    conn = get_db()
+    cur = conn.cursor()
     cur.execute("""
         SELECT date, weight FROM achievement
-        WHERE user_id = ?
+        WHERE user_id = ? AND date BETWEEN ? AND ?
         ORDER BY date
-    """, (user_id,))
+    """, (user_id, start_date, end_date))
     rows = cur.fetchall()
-    con.close()
 
-    labels = [row['date'] for row in rows]
-    weights = [row['weight'] for row in rows]
+    # グラフ用データ作成
+    labels = [row["date"] for row in rows]
+    weights = [row["weight"] for row in rows]
 
-    return render_template('WeightGraphPage.html', labels=labels, weights=weights)
+    return render_template("WeightGraphPage.html",
+                           labels=labels,
+                           weights=weights,
+                           year=year,
+                           month=month)
+
 
 # --- ログアウト ---
 @app.route('/logout')
